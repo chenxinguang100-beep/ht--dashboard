@@ -45,18 +45,33 @@
   tbody td.empty { background: #fafaf8; }
 
   .class-block { display: flex; flex-direction: column; align-items: center; padding: 4px 6px; border-radius: 5px; font-size: 11px; font-weight: 600; line-height: 1.4; border: 1px solid; height: 100%; min-height: 46px; justify-content: center; gap: 2px; }
-  .class-seq { font-size: 10px; opacity: 0.7; font-weight: 400; }
 
+  /* ── Cohort cards (text-forward) ── */
   .summary-section { margin-top: 24px; }
   .summary-section h2 { font-size: 18px; color: #1a3a1c; margin-bottom: 12px; }
-  .cohort-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-bottom: 16px; }
-  .c-card { background: #fff; border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.05); font-size: 12px; border-left: 4px solid #c4bfb4; }
-  .c-card h4 { font-size: 14px; margin-bottom: 4px; color: #1a3a1c; }
-  .c-card .cid-line { font-size: 11px; color: #868e96; margin-bottom: 10px; line-height: 1.5; }
-  .c-card .week-blocks { display: flex; gap: 6px; flex-wrap: wrap; }
-  .c-card .wb { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; }
-  .c-card .wb-dot { width: 28px; height: 28px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
-  .c-card .wb-label { color: #868e96; }
+  .cohort-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .c-card {
+    background: #fff; border-radius: 10px; padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05); font-size: 13px;
+  }
+  .c-card .card-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #eee;
+  }
+  .c-card .card-head h4 { font-size: 15px; color: #1a3a1c; }
+  .c-card .card-head .students { font-size: 12px; color: #868e96; }
+  .c-card .card-body { display: flex; flex-direction: column; gap: 8px; }
+  .c-card .card-row {
+    display: flex; align-items: baseline; gap: 10px;
+    font-size: 13px;
+  }
+  .c-card .card-row .label {
+    font-weight: 700; min-width: 52px; color: #495057; font-size: 12px;
+  }
+  .c-card .card-row .value { color: #2c3e2d; }
+  .c-card .card-row .muted { color: #adb5bd; font-size: 11px; }
+  .c-card .card-row-soft { border-left: 3px solid #e8a040; padding-left: 8px; }
+  .c-card .card-row-ai   { border-left: 3px solid #64b5f6; padding-left: 8px; }
 
   .footer { margin-top: 20px; padding: 16px 0; font-size: 11px; color: #adb5bd; text-align: center; border-top: 1px solid #e0dcd5; }
 </style>
@@ -346,48 +361,114 @@
 </div></div>
 
 <div class="summary-section">
-<h2>📋 各班期课程概览</h2>
+<h2>📋 各班期课程信息</h2>
 <div class="cohort-cards">
 <div class="c-card">
-  <h4>C4 <span style="font-weight:400;font-size:11px;color:#868e96">· 1000人</span></h4>
-  <div class="cid-line">偶数班 Fri19+Sat19 · AI科普: 周二19:00 · 首课07/17</div>
-  <div class="week-blocks">
-<div class="wb"><div class="wb-dot" style="background:#fff8e1;color:#8a4f1c;border:1px solid #f0c060">软1</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#ffe0a0;color:#8a4f1c;border:1px solid #e8a040">软2</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#fcc070;color:#5c2a00;border:1px solid #d4842a">软3</div><span class="wb-label">W2</span></div><div class="wb"><div class="wb-dot" style="background:#f09440;color:#ffffff;border:1px solid #c0601c">软4</div><span class="wb-label">W2</span></div><span style="color:#adb5bd;margin:0 2px;align-self:center">→</span><div class="wb"><div class="wb-dot" style="background:#e3f2fd;color:#1a4a7a;border:1px solid #90caf9">AI1</div><span class="wb-label">W3</span></div><div class="wb"><div class="wb-dot" style="background:#bbdefb;color:#1a4a7a;border:1px solid #64b5f6">AI2</div><span class="wb-label">W4</span></div><div class="wb"><div class="wb-dot" style="background:#90caf9;color:#0d2b4a;border:1px solid #42a5f5">AI3</div><span class="wb-label">W5</span></div><div class="wb"><div class="wb-dot" style="background:#5a9cc8;color:#ffffff;border:1px solid #1e6fa0">AI4</div><span class="wb-label">W6</span></div>
+  <div class="card-head">
+    <h4>C4</h4>
+    <span class="students">1000人 · 首课 07/17</span>
+  </div>
+  <div class="card-body">
+    <div class="card-row card-row-soft">
+      <span class="label">软编 ×4</span>
+      <span class="value">周五+周六 19:00</span>
+      <span class="muted">07/17-18、07/24-25</span>
+    </div>
+    <div class="card-row card-row-ai">
+      <span class="label">AI科普 ×4</span>
+      <span class="value">周二 19:00</span>
+      <span class="muted">08/04–08/25</span>
+    </div>
   </div>
 </div>
 <div class="c-card">
-  <h4>C5 <span style="font-weight:400;font-size:11px;color:#868e96">· 500人</span></h4>
-  <div class="cid-line">奇数班 Fri18+Sat18 · AI科普: 周四18:00 · 首课07/24</div>
-  <div class="week-blocks">
-<div class="wb"><div class="wb-dot" style="background:#fff8e1;color:#8a4f1c;border:1px solid #f0c060">软1</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#ffe0a0;color:#8a4f1c;border:1px solid #e8a040">软2</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#fcc070;color:#5c2a00;border:1px solid #d4842a">软3</div><span class="wb-label">W2</span></div><div class="wb"><div class="wb-dot" style="background:#f09440;color:#ffffff;border:1px solid #c0601c">软4</div><span class="wb-label">W2</span></div><span style="color:#adb5bd;margin:0 2px;align-self:center">→</span><div class="wb"><div class="wb-dot" style="background:#e3f2fd;color:#1a4a7a;border:1px solid #90caf9">AI1</div><span class="wb-label">W3</span></div><div class="wb"><div class="wb-dot" style="background:#bbdefb;color:#1a4a7a;border:1px solid #64b5f6">AI2</div><span class="wb-label">W4</span></div><div class="wb"><div class="wb-dot" style="background:#90caf9;color:#0d2b4a;border:1px solid #42a5f5">AI3</div><span class="wb-label">W5</span></div><div class="wb"><div class="wb-dot" style="background:#5a9cc8;color:#ffffff;border:1px solid #1e6fa0">AI4</div><span class="wb-label">W6</span></div>
+  <div class="card-head">
+    <h4>C5</h4>
+    <span class="students">500人 · 首课 07/24</span>
+  </div>
+  <div class="card-body">
+    <div class="card-row card-row-soft">
+      <span class="label">软编 ×4</span>
+      <span class="value">周五+周六 18:00</span>
+      <span class="muted">07/24-25、07/31-08/01</span>
+    </div>
+    <div class="card-row card-row-ai">
+      <span class="label">AI科普 ×4</span>
+      <span class="value">周四 18:00</span>
+      <span class="muted">08/13–09/03</span>
+    </div>
   </div>
 </div>
 <div class="c-card">
-  <h4>C6 <span style="font-weight:400;font-size:11px;color:#868e96">· 1000人</span></h4>
-  <div class="cid-line">偶数班 Fri19+Sat19 · AI科普: 周四19:00 · 首课07/31</div>
-  <div class="week-blocks">
-<div class="wb"><div class="wb-dot" style="background:#fff8e1;color:#8a4f1c;border:1px solid #f0c060">软1</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#ffe0a0;color:#8a4f1c;border:1px solid #e8a040">软2</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#fcc070;color:#5c2a00;border:1px solid #d4842a">软3</div><span class="wb-label">W2</span></div><div class="wb"><div class="wb-dot" style="background:#f09440;color:#ffffff;border:1px solid #c0601c">软4</div><span class="wb-label">W2</span></div><span style="color:#adb5bd;margin:0 2px;align-self:center">→</span><div class="wb"><div class="wb-dot" style="background:#e3f2fd;color:#1a4a7a;border:1px solid #90caf9">AI1</div><span class="wb-label">W3</span></div><div class="wb"><div class="wb-dot" style="background:#bbdefb;color:#1a4a7a;border:1px solid #64b5f6">AI2</div><span class="wb-label">W4</span></div><div class="wb"><div class="wb-dot" style="background:#90caf9;color:#0d2b4a;border:1px solid #42a5f5">AI3</div><span class="wb-label">W5</span></div><div class="wb"><div class="wb-dot" style="background:#5a9cc8;color:#ffffff;border:1px solid #1e6fa0">AI4</div><span class="wb-label">W6</span></div>
+  <div class="card-head">
+    <h4>C6</h4>
+    <span class="students">1000人 · 首课 07/31</span>
+  </div>
+  <div class="card-body">
+    <div class="card-row card-row-soft">
+      <span class="label">软编 ×4</span>
+      <span class="value">周五+周六 19:00</span>
+      <span class="muted">07/31-08/01、08/07-08</span>
+    </div>
+    <div class="card-row card-row-ai">
+      <span class="label">AI科普 ×4</span>
+      <span class="value">周四 19:00</span>
+      <span class="muted">08/20–09/10</span>
+    </div>
   </div>
 </div>
 <div class="c-card">
-  <h4>C7 <span style="font-weight:400;font-size:11px;color:#868e96">· 1000人</span></h4>
-  <div class="cid-line">奇数班 Fri18+Sat18 · AI科普: 周二18:00 · 首课08/07</div>
-  <div class="week-blocks">
-<div class="wb"><div class="wb-dot" style="background:#fff8e1;color:#8a4f1c;border:1px solid #f0c060">软1</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#ffe0a0;color:#8a4f1c;border:1px solid #e8a040">软2</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#fcc070;color:#5c2a00;border:1px solid #d4842a">软3</div><span class="wb-label">W2</span></div><div class="wb"><div class="wb-dot" style="background:#f09440;color:#ffffff;border:1px solid #c0601c">软4</div><span class="wb-label">W2</span></div><span style="color:#adb5bd;margin:0 2px;align-self:center">→</span><div class="wb"><div class="wb-dot" style="background:#e3f2fd;color:#1a4a7a;border:1px solid #90caf9">AI1</div><span class="wb-label">W3</span></div><div class="wb"><div class="wb-dot" style="background:#bbdefb;color:#1a4a7a;border:1px solid #64b5f6">AI2</div><span class="wb-label">W4</span></div><div class="wb"><div class="wb-dot" style="background:#90caf9;color:#0d2b4a;border:1px solid #42a5f5">AI3</div><span class="wb-label">W5</span></div><div class="wb"><div class="wb-dot" style="background:#5a9cc8;color:#ffffff;border:1px solid #1e6fa0">AI4</div><span class="wb-label">W6</span></div>
+  <div class="card-head">
+    <h4>C7</h4>
+    <span class="students">1000人 · 首课 08/07</span>
+  </div>
+  <div class="card-body">
+    <div class="card-row card-row-soft">
+      <span class="label">软编 ×4</span>
+      <span class="value">周五+周六 18:00</span>
+      <span class="muted">08/07-08、08/14-15</span>
+    </div>
+    <div class="card-row card-row-ai">
+      <span class="label">AI科普 ×4</span>
+      <span class="value">周二 18:00</span>
+      <span class="muted">08/25–09/15</span>
+    </div>
   </div>
 </div>
 <div class="c-card">
-  <h4>C8 <span style="font-weight:400;font-size:11px;color:#868e96">· 2000人</span></h4>
-  <div class="cid-line">偶数班 Fri19+Sat19 · AI科普: 周二19:00 · 首课08/14</div>
-  <div class="week-blocks">
-<div class="wb"><div class="wb-dot" style="background:#fff8e1;color:#8a4f1c;border:1px solid #f0c060">软1</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#ffe0a0;color:#8a4f1c;border:1px solid #e8a040">软2</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#fcc070;color:#5c2a00;border:1px solid #d4842a">软3</div><span class="wb-label">W2</span></div><div class="wb"><div class="wb-dot" style="background:#f09440;color:#ffffff;border:1px solid #c0601c">软4</div><span class="wb-label">W2</span></div><span style="color:#adb5bd;margin:0 2px;align-self:center">→</span><div class="wb"><div class="wb-dot" style="background:#e3f2fd;color:#1a4a7a;border:1px solid #90caf9">AI1</div><span class="wb-label">W3</span></div><div class="wb"><div class="wb-dot" style="background:#bbdefb;color:#1a4a7a;border:1px solid #64b5f6">AI2</div><span class="wb-label">W4</span></div><div class="wb"><div class="wb-dot" style="background:#90caf9;color:#0d2b4a;border:1px solid #42a5f5">AI3</div><span class="wb-label">W5</span></div><div class="wb"><div class="wb-dot" style="background:#5a9cc8;color:#ffffff;border:1px solid #1e6fa0">AI4</div><span class="wb-label">W6</span></div>
+  <div class="card-head">
+    <h4>C8</h4>
+    <span class="students">2000人 · 首课 08/14</span>
+  </div>
+  <div class="card-body">
+    <div class="card-row card-row-soft">
+      <span class="label">软编 ×4</span>
+      <span class="value">周五+周六 19:00</span>
+      <span class="muted">08/14-15、08/21-22</span>
+    </div>
+    <div class="card-row card-row-ai">
+      <span class="label">AI科普 ×4</span>
+      <span class="value">周二 19:00</span>
+      <span class="muted">09/01–09/22</span>
+    </div>
   </div>
 </div>
 <div class="c-card">
-  <h4>C9 <span style="font-weight:400;font-size:11px;color:#868e96">· 2000人</span></h4>
-  <div class="cid-line">奇数班 Fri18+Sat18 · AI科普: 周四18:00 · 首课08/21</div>
-  <div class="week-blocks">
-<div class="wb"><div class="wb-dot" style="background:#fff8e1;color:#8a4f1c;border:1px solid #f0c060">软1</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#ffe0a0;color:#8a4f1c;border:1px solid #e8a040">软2</div><span class="wb-label">W1</span></div><div class="wb"><div class="wb-dot" style="background:#fcc070;color:#5c2a00;border:1px solid #d4842a">软3</div><span class="wb-label">W2</span></div><div class="wb"><div class="wb-dot" style="background:#f09440;color:#ffffff;border:1px solid #c0601c">软4</div><span class="wb-label">W2</span></div><span style="color:#adb5bd;margin:0 2px;align-self:center">→</span><div class="wb"><div class="wb-dot" style="background:#e3f2fd;color:#1a4a7a;border:1px solid #90caf9">AI1</div><span class="wb-label">W3</span></div><div class="wb"><div class="wb-dot" style="background:#bbdefb;color:#1a4a7a;border:1px solid #64b5f6">AI2</div><span class="wb-label">W4</span></div><div class="wb"><div class="wb-dot" style="background:#90caf9;color:#0d2b4a;border:1px solid #42a5f5">AI3</div><span class="wb-label">W5</span></div><div class="wb"><div class="wb-dot" style="background:#5a9cc8;color:#ffffff;border:1px solid #1e6fa0">AI4</div><span class="wb-label">W6</span></div>
+  <div class="card-head">
+    <h4>C9</h4>
+    <span class="students">2000人 · 首课 08/21</span>
+  </div>
+  <div class="card-body">
+    <div class="card-row card-row-soft">
+      <span class="label">软编 ×4</span>
+      <span class="value">周五+周六 18:00</span>
+      <span class="muted">08/21-22、08/28-29</span>
+    </div>
+    <div class="card-row card-row-ai">
+      <span class="label">AI科普 ×4</span>
+      <span class="value">周四 18:00</span>
+      <span class="muted">09/10–10/01</span>
+    </div>
   </div>
 </div>
 </div>
@@ -395,8 +476,7 @@
 
 <div class="footer">
   仅展示主讲老师需要出镜的课型（软编 + AI科普）。硬件搭建课为纯录播，不计入主讲排期。<br>
-  C3已完全移除。分时方案：奇数班 Fri18+Sat18，偶数班 Fri19+Sat19。<br>
-  颜色按课程进度加深：浅色=课程初期，深色=课程后期。
+  C3已完全移除。分时方案：奇数班 Fri18+Sat18，偶数班 Fri19+Sat19。
 </div>
 
 </div>
