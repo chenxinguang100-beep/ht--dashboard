@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>主讲老师个人排课 — 分时方案</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f3ef;
+    color: #2c3e2d;
+    background-image: linear-gradient(rgba(44,62,45,0.025) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(44,62,45,0.025) 1px, transparent 1px);
+    background-size: 20px 20px;
+    min-height: 100vh;
+  }
+
+  .shell {
+    max-width: 100%;
+    padding: 24px 24px 0;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px; margin-bottom: 6px;
+  }
+  h1 {
+    font-size: 26px; font-weight: 700; color: #1a3a1c; letter-spacing: -0.5px;
+  }
+  .meta {
+    font-size: 13px; color: #6b7c6d;
+  }
+  .badge {
+    display: inline-block; padding: 3px 12px; border-radius: 12px;
+    font-size: 11px; font-weight: 700;
+  }
+  .badge-ok { background: #d8f3dc; color: #1b4332; }
+  .badge-scheme { background: #ffe8cc; color: #e67700; }
+
+  /* ── Legend ── */
+  .legend-row {
+    display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+    padding: 12px 0; font-size: 12px; border-bottom: 1px solid #e0dcd5;
+    margin-bottom: 12px;
+  }
+  .legend-c { display: flex; align-items: center; gap: 5px; }
+  .legend-dot {
+    width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0;
+  }
+  .legend-tag {
+    display: inline-block; padding: 1px 7px; border-radius: 3px;
+    font-size: 10px; font-weight: 600;
+  }
+  .legend-tag-soft { background: #1a5c3a; color: #fff; }
+  .legend-tag-ai { background: #1a4a7a; color: #fff; }
+
+  /* ── Stats ── */
+  .stats {
+    display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .stat {
+    background: #fff; border-radius: 8px; padding: 10px 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04); font-size: 12px;
+    min-width: 80px; text-align: center;
+  }
+  .stat-val { font-size: 20px; font-weight: 700; color: #1a3a1c; }
+  .stat-lbl { color: #868e96; font-size: 10px; margin-top: 2px; }
+
+  /* ── Scroll wrapper ── */
+  .schedule-outer {
+    overflow-x: auto;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    background: #fff;
+    -webkit-overflow-scrolling: touch;
+  }
+  .schedule-outer::-webkit-scrollbar { height: 8px; }
+  .schedule-outer::-webkit-scrollbar-track { background: #f0ede8; border-radius: 4px; }
+  .schedule-outer::-webkit-scrollbar-thumb { background: #c4bfb4; border-radius: 4px; }
+
+  .schedule-inner {
+    min-width: max-content;
+    padding: 0;
+  }
+
+  table {
+    border-collapse: collapse; font-size: 12px; width: 100%;
+    min-width: max-content;
+  }
+
+  /* ── Header rows ── */
+  thead th {
+    position: sticky; top: 0; z-index: 3;
+    background: #1a3a1c; color: #fff;
+    font-weight: 600; font-size: 11px;
+    padding: 8px 4px; text-align: center;
+    border: 1px solid #1a3a1c;
+    white-space: nowrap;
+    min-width: 86px;
+  }
+  thead th.month-row {
+    background: #2d6a4f; font-size: 12px; padding: 6px 4px;
+    border-bottom: 2px solid #1a3a1c;
+  }
+  thead th.weekend { background: #26482b; }
+  thead th:first-child {
+    min-width: 62px; text-align: left; padding-left: 10px;
+    background: #2d6a4f;
+  }
+
+  /* ── Body ── */
+  tbody td {
+    padding: 4px; text-align: center; border: 1px solid #e8e4dd;
+    vertical-align: top; height: 52px;
+  }
+  tbody td.time-label {
+    background: #f8f7f4; font-weight: 600; text-align: left;
+    font-size: 11px; color: #495057; padding: 4px 8px;
+    white-space: nowrap; width: 62px;
+    position: sticky; left: 0; z-index: 1;
+  }
+  tbody td.empty { background: #fafaf8; }
+  tbody td.empty-we { background: #f6f5f2; }
+
+  .class-block {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 4px 6px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; line-height: 1.4;
+    border: 1px solid;
+    height: 100%; min-height: 44px; justify-content: center;
+    gap: 2px;
+  }
+  .class-tag {
+    font-size: 9px; padding: 1px 5px; border-radius: 2px;
+    font-weight: 600; letter-spacing: 0.3px;
+  }
+
+  /* ── Week separator ── */
+  tbody tr.week-sep td {
+    border-top: 2px solid #c4bfb4; height: 0; padding: 0;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 20px; padding: 16px 0;
+    font-size: 11px; color: #adb5bd; text-align: center;
+    border-top: 1px solid #e0dcd5;
+  }
+
+  /* ── Cohort summary cards ── */
+  .summary-section {
+    margin-top: 24px;
+  }
+  .summary-section h2 {
+    font-size: 18px; color: #1a3a1c; margin-bottom: 12px;
+  }
+  .cohort-cards {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px; margin-bottom: 16px;
+  }
+  .c-card {
+    background: #fff; border-radius: 8px; padding: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); font-size: 12px;
+    border-left: 4px solid;
+  }
+  .c-card h4 { font-size: 14px; margin-bottom: 6px; }
+  .c-card .cid-line { font-size: 11px; color: #868e96; margin-bottom: 8px; }
+  .c-card .week-list { display: flex; flex-direction: column; gap: 3px; font-size: 11px; }
+  .c-card .wl-row { display: flex; gap: 6px; align-items: center; }
+  .c-card .wl-w { font-weight: 700; min-width: 22px; color: #495057; }
+  .c-mini-tag {
+    display: inline-block; padding: 1px 6px; border-radius: 3px;
+    font-size: 10px; font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="header">
+  <div>
+    <h1>📅 主讲老师个人排课</h1>
+    <div class="meta">仅软编 + AI拓展课 · 分时方案 · C3已移除 · C4首课 07/17</div>
+  </div>
+  <div>
+    <span class="badge badge-ok">✅ 零冲突</span>
+    <span class="badge badge-scheme">分时方案</span>
+  </div>
+</div>
+
+<div class="legend-row">
+  <span style="color:#868e96;font-weight:600">期次：</span>
+<span class="legend-c"><span class="legend-dot" style="background:#d8f0e8;border:1px solid #7ec89c"></span>C4</span><span class="legend-c"><span class="legend-dot" style="background:#fce4cc;border:1px solid #f0a860"></span>C5</span><span class="legend-c"><span class="legend-dot" style="background:#dce8f8;border:1px solid #7aa8d8"></span>C6</span><span class="legend-c"><span class="legend-dot" style="background:#e8d8f0;border:1px solid #a878c8"></span>C7</span><span class="legend-c"><span class="legend-dot" style="background:#f8e0e8;border:1px solid #d878a8"></span>C8</span><span class="legend-c"><span class="legend-dot" style="background:#e0e8d8;border:1px solid #98b878"></span>C9</span>
+  <span style="margin-left:12px;color:#868e96;font-weight:600">课型：</span>
+  <span class="legend-c"><span class="legend-tag legend-tag-soft">软</span> 软编</span>
+  <span class="legend-c"><span class="legend-tag legend-tag-ai">AI</span> AI科普</span>
+  <span style="margin-left:12px;color:#868e96;font-weight:600">时段：</span>
+  <span style="font-size:11px">周五18/19 · 周六18/19 · 周二18/19 · 周四18/19</span>
+</div>
+
+<div class="stats">
+
+  <div class="stat"><div class="stat-val">48</div><div class="stat-lbl">总课时</div></div>
+  <div class="stat"><div class="stat-val">24</div><div class="stat-lbl">软编课</div></div>
+  <div class="stat"><div class="stat-val">24</div><div class="stat-lbl">AI科普课</div></div>
+  <div class="stat"><div class="stat-val">6</div><div class="stat-lbl">在读班期</div></div>
+  <div class="stat"><div class="stat-val">7500</div><div class="stat-lbl">在读学生</div></div>
+  <div class="stat"><div class="stat-val">30</div><div class="stat-lbl">上课天数</div></div>
+  <div class="stat"><div class="stat-val">07/17→10/01</div><div class="stat-lbl">排期跨度</div></div>
+</div>
+
+<div class="schedule-outer">
+<div class="schedule-inner">
+<table>
+<thead>
+<tr><th class="month-row" style="position:sticky;left:0;z-index:4">时段</th><th class="month-row" colspan="5">2026年07月</th><th class="month-row" colspan="16">2026年08月</th><th class="month-row" colspan="8">2026年09月</th><th class="month-row" colspan="1">2026年10月</th></tr>
+<tr><th style="position:sticky;left:0;z-index:4">日期</th><th class="">07/17<br><span style="font-size:10px;opacity:0.75">周五</span></th><th class="weekend">07/18<br><span style="font-size:10px;opacity:0.75">周六</span></th><th class="">07/24<br><span style="font-size:10px;opacity:0.75">周五</span></th><th class="weekend">07/25<br><span style="font-size:10px;opacity:0.75">周六</span></th><th class="">07/31<br><span style="font-size:10px;opacity:0.75">周五</span></th><th class="weekend">08/01<br><span style="font-size:10px;opacity:0.75">周六</span></th><th class="">08/04<br><span style="font-size:10px;opacity:0.75">周二</span></th><th class="">08/07<br><span style="font-size:10px;opacity:0.75">周五</span></th><th class="weekend">08/08<br><span style="font-size:10px;opacity:0.75">周六</span></th><th class="">08/11<br><span style="font-size:10px;opacity:0.75">周二</span></th><th class="">08/13<br><span style="font-size:10px;opacity:0.75">周四</span></th><th class="">08/14<br><span style="font-size:10px;opacity:0.75">周五</span></th><th class="weekend">08/15<br><span style="font-size:10px;opacity:0.75">周六</span></th><th class="">08/18<br><span style="font-size:10px;opacity:0.75">周二</span></th><th class="">08/20<br><span style="font-size:10px;opacity:0.75">周四</span></th><th class="">08/21<br><span style="font-size:10px;opacity:0.75">周五</span></th><th class="weekend">08/22<br><span style="font-size:10px;opacity:0.75">周六</span></th><th class="">08/25<br><span style="font-size:10px;opacity:0.75">周二</span></th><th class="">08/27<br><span style="font-size:10px;opacity:0.75">周四</span></th><th class="">08/28<br><span style="font-size:10px;opacity:0.75">周五</span></th><th class="weekend">08/29<br><span style="font-size:10px;opacity:0.75">周六</span></th><th class="">09/01<br><span style="font-size:10px;opacity:0.75">周二</span></th><th class="">09/03<br><span style="font-size:10px;opacity:0.75">周四</span></th><th class="">09/08<br><span style="font-size:10px;opacity:0.75">周二</span></th><th class="">09/10<br><span style="font-size:10px;opacity:0.75">周四</span></th><th class="">09/15<br><span style="font-size:10px;opacity:0.75">周二</span></th><th class="">09/17<br><span style="font-size:10px;opacity:0.75">周四</span></th><th class="">09/22<br><span style="font-size:10px;opacity:0.75">周二</span></th><th class="">09/24<br><span style="font-size:10px;opacity:0.75">周四</span></th><th class="">10/01<br><span style="font-size:10px;opacity:0.75">周四</span></th></tr>
+</thead>
+<tbody>
+<tr><td class="time-label">18:00</td><td class="empty"></td><td class="empty"></td><td>
+              <div class="class-block" style="background:#fce4cc;color:#8a4f1c;border-color:#f0a860">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C5 W1软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#fce4cc;color:#8a4f1c;border-color:#f0a860">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C5 W1软编-2
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#fce4cc;color:#8a4f1c;border-color:#f0a860">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C5 W2软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#fce4cc;color:#8a4f1c;border-color:#f0a860">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C5 W2软编-2
+              </div>
+            </td><td class="empty"></td><td>
+              <div class="class-block" style="background:#e8d8f0;color:#4a1a6a;border-color:#a878c8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C7 W1软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e8d8f0;color:#4a1a6a;border-color:#a878c8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C7 W1软编-2
+              </div>
+            </td><td class="empty"></td><td>
+              <div class="class-block" style="background:#fce4cc;color:#8a4f1c;border-color:#f0a860">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C5 W3AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e8d8f0;color:#4a1a6a;border-color:#a878c8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C7 W2软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e8d8f0;color:#4a1a6a;border-color:#a878c8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C7 W2软编-2
+              </div>
+            </td><td class="empty"></td><td>
+              <div class="class-block" style="background:#fce4cc;color:#8a4f1c;border-color:#f0a860">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C5 W4AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e0e8d8;color:#3a4a1a;border-color:#98b878">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C9 W1软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e0e8d8;color:#3a4a1a;border-color:#98b878">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C9 W1软编-2
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e8d8f0;color:#4a1a6a;border-color:#a878c8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C7 W3AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#fce4cc;color:#8a4f1c;border-color:#f0a860">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C5 W5AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e0e8d8;color:#3a4a1a;border-color:#98b878">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C9 W2软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e0e8d8;color:#3a4a1a;border-color:#98b878">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C9 W2软编-2
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e8d8f0;color:#4a1a6a;border-color:#a878c8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C7 W4AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#fce4cc;color:#8a4f1c;border-color:#f0a860">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C5 W6AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e8d8f0;color:#4a1a6a;border-color:#a878c8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C7 W5AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e0e8d8;color:#3a4a1a;border-color:#98b878">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C9 W3AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e8d8f0;color:#4a1a6a;border-color:#a878c8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C7 W6AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e0e8d8;color:#3a4a1a;border-color:#98b878">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C9 W4AI科普
+              </div>
+            </td><td class="empty"></td><td>
+              <div class="class-block" style="background:#e0e8d8;color:#3a4a1a;border-color:#98b878">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C9 W5AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#e0e8d8;color:#3a4a1a;border-color:#98b878">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C9 W6AI科普
+              </div>
+            </td></tr>
+<tr><td class="time-label">19:00</td><td>
+              <div class="class-block" style="background:#d8f0e8;color:#1a5c3a;border-color:#7ec89c">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C4 W1软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#d8f0e8;color:#1a5c3a;border-color:#7ec89c">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C4 W1软编-2
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#d8f0e8;color:#1a5c3a;border-color:#7ec89c">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C4 W2软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#d8f0e8;color:#1a5c3a;border-color:#7ec89c">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C4 W2软编-2
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#dce8f8;color:#1a4a7a;border-color:#7aa8d8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C6 W1软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#dce8f8;color:#1a4a7a;border-color:#7aa8d8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C6 W1软编-2
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#d8f0e8;color:#1a5c3a;border-color:#7ec89c">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C4 W3AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#dce8f8;color:#1a4a7a;border-color:#7aa8d8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C6 W2软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#dce8f8;color:#1a4a7a;border-color:#7aa8d8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C6 W2软编-2
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#d8f0e8;color:#1a5c3a;border-color:#7ec89c">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C4 W4AI科普
+              </div>
+            </td><td class="empty"></td><td>
+              <div class="class-block" style="background:#f8e0e8;color:#7a1a4a;border-color:#d878a8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C8 W1软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#f8e0e8;color:#7a1a4a;border-color:#d878a8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C8 W1软编-2
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#d8f0e8;color:#1a5c3a;border-color:#7ec89c">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C4 W5AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#dce8f8;color:#1a4a7a;border-color:#7aa8d8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C6 W3AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#f8e0e8;color:#7a1a4a;border-color:#d878a8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C8 W2软编-1
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#f8e0e8;color:#7a1a4a;border-color:#d878a8">
+                <span class="class-tag" style="background:#1a5c3a;color:#ffffff">软</span>
+                C8 W2软编-2
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#d8f0e8;color:#1a5c3a;border-color:#7ec89c">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C4 W6AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#dce8f8;color:#1a4a7a;border-color:#7aa8d8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C6 W4AI科普
+              </div>
+            </td><td class="empty"></td><td class="empty"></td><td>
+              <div class="class-block" style="background:#f8e0e8;color:#7a1a4a;border-color:#d878a8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C8 W3AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#dce8f8;color:#1a4a7a;border-color:#7aa8d8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C6 W5AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#f8e0e8;color:#7a1a4a;border-color:#d878a8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C8 W4AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#dce8f8;color:#1a4a7a;border-color:#7aa8d8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C6 W6AI科普
+              </div>
+            </td><td>
+              <div class="class-block" style="background:#f8e0e8;color:#7a1a4a;border-color:#d878a8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C8 W5AI科普
+              </div>
+            </td><td class="empty"></td><td>
+              <div class="class-block" style="background:#f8e0e8;color:#7a1a4a;border-color:#d878a8">
+                <span class="class-tag" style="background:#1a4a7a;color:#ffffff">AI</span>
+                C8 W6AI科普
+              </div>
+            </td><td class="empty"></td><td class="empty"></td></tr>
+</tbody></table>
+</div></div>
+
+<!-- Week separator legend: show a thin visual marker at each week boundary -->
+
+<div class="summary-section">
+<h2>📋 各班期完整课表</h2>
+<div class="cohort-cards">
+<div class="c-card" style="border-left-color:#7ec89c">
+  <h4 style="color:#1a5c3a">C4 <span style="font-weight:400;font-size:11px;color:#868e96">· 1000人</span></h4>
+  <div class="cid-line">偶数班 Fri19+Sat19 · AI科普: 周二19:00 · 首课07/17</div>
+  <div class="week-list">
+    <div class="wl-row"><span class="wl-w">W1</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W1: 软编×2</span><span style="font-size:10px;color:#adb5bd">07/17起</span></div>
+    <div class="wl-row"><span class="wl-w">W2</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W2: 软编×2</span><span style="font-size:10px;color:#adb5bd">07/24起</span></div>
+    <div class="wl-row"><span class="wl-w">W3</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W3: AI科普×1</span><span style="font-size:10px;color:#adb5bd">07/31起</span></div>
+    <div class="wl-row"><span class="wl-w">W4</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W4: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/07起</span></div>
+    <div class="wl-row"><span class="wl-w">W5</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W5: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/14起</span></div>
+    <div class="wl-row"><span class="wl-w">W6</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W6: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/21起</span></div>
+  </div>
+</div>
+<div class="c-card" style="border-left-color:#f0a860">
+  <h4 style="color:#8a4f1c">C5 <span style="font-weight:400;font-size:11px;color:#868e96">· 500人</span></h4>
+  <div class="cid-line">奇数班 Fri18+Sat18 · AI科普: 周四18:00 · 首课07/24</div>
+  <div class="week-list">
+    <div class="wl-row"><span class="wl-w">W1</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W1: 软编×2</span><span style="font-size:10px;color:#adb5bd">07/24起</span></div>
+    <div class="wl-row"><span class="wl-w">W2</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W2: 软编×2</span><span style="font-size:10px;color:#adb5bd">07/31起</span></div>
+    <div class="wl-row"><span class="wl-w">W3</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W3: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/07起</span></div>
+    <div class="wl-row"><span class="wl-w">W4</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W4: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/14起</span></div>
+    <div class="wl-row"><span class="wl-w">W5</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W5: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/21起</span></div>
+    <div class="wl-row"><span class="wl-w">W6</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W6: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/28起</span></div>
+  </div>
+</div>
+<div class="c-card" style="border-left-color:#7aa8d8">
+  <h4 style="color:#1a4a7a">C6 <span style="font-weight:400;font-size:11px;color:#868e96">· 1000人</span></h4>
+  <div class="cid-line">偶数班 Fri19+Sat19 · AI科普: 周四19:00 · 首课07/31</div>
+  <div class="week-list">
+    <div class="wl-row"><span class="wl-w">W1</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W1: 软编×2</span><span style="font-size:10px;color:#adb5bd">07/31起</span></div>
+    <div class="wl-row"><span class="wl-w">W2</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W2: 软编×2</span><span style="font-size:10px;color:#adb5bd">08/07起</span></div>
+    <div class="wl-row"><span class="wl-w">W3</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W3: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/14起</span></div>
+    <div class="wl-row"><span class="wl-w">W4</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W4: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/21起</span></div>
+    <div class="wl-row"><span class="wl-w">W5</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W5: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/28起</span></div>
+    <div class="wl-row"><span class="wl-w">W6</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W6: AI科普×1</span><span style="font-size:10px;color:#adb5bd">09/04起</span></div>
+  </div>
+</div>
+<div class="c-card" style="border-left-color:#a878c8">
+  <h4 style="color:#4a1a6a">C7 <span style="font-weight:400;font-size:11px;color:#868e96">· 1000人</span></h4>
+  <div class="cid-line">奇数班 Fri18+Sat18 · AI科普: 周二18:00 · 首课08/07</div>
+  <div class="week-list">
+    <div class="wl-row"><span class="wl-w">W1</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W1: 软编×2</span><span style="font-size:10px;color:#adb5bd">08/07起</span></div>
+    <div class="wl-row"><span class="wl-w">W2</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W2: 软编×2</span><span style="font-size:10px;color:#adb5bd">08/14起</span></div>
+    <div class="wl-row"><span class="wl-w">W3</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W3: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/21起</span></div>
+    <div class="wl-row"><span class="wl-w">W4</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W4: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/28起</span></div>
+    <div class="wl-row"><span class="wl-w">W5</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W5: AI科普×1</span><span style="font-size:10px;color:#adb5bd">09/04起</span></div>
+    <div class="wl-row"><span class="wl-w">W6</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W6: AI科普×1</span><span style="font-size:10px;color:#adb5bd">09/11起</span></div>
+  </div>
+</div>
+<div class="c-card" style="border-left-color:#d878a8">
+  <h4 style="color:#7a1a4a">C8 <span style="font-weight:400;font-size:11px;color:#868e96">· 2000人</span></h4>
+  <div class="cid-line">偶数班 Fri19+Sat19 · AI科普: 周二19:00 · 首课08/14</div>
+  <div class="week-list">
+    <div class="wl-row"><span class="wl-w">W1</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W1: 软编×2</span><span style="font-size:10px;color:#adb5bd">08/14起</span></div>
+    <div class="wl-row"><span class="wl-w">W2</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W2: 软编×2</span><span style="font-size:10px;color:#adb5bd">08/21起</span></div>
+    <div class="wl-row"><span class="wl-w">W3</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W3: AI科普×1</span><span style="font-size:10px;color:#adb5bd">08/28起</span></div>
+    <div class="wl-row"><span class="wl-w">W4</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W4: AI科普×1</span><span style="font-size:10px;color:#adb5bd">09/04起</span></div>
+    <div class="wl-row"><span class="wl-w">W5</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W5: AI科普×1</span><span style="font-size:10px;color:#adb5bd">09/11起</span></div>
+    <div class="wl-row"><span class="wl-w">W6</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W6: AI科普×1</span><span style="font-size:10px;color:#adb5bd">09/18起</span></div>
+  </div>
+</div>
+<div class="c-card" style="border-left-color:#98b878">
+  <h4 style="color:#3a4a1a">C9 <span style="font-weight:400;font-size:11px;color:#868e96">· 2000人</span></h4>
+  <div class="cid-line">奇数班 Fri18+Sat18 · AI科普: 周四18:00 · 首课08/21</div>
+  <div class="week-list">
+    <div class="wl-row"><span class="wl-w">W1</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W1: 软编×2</span><span style="font-size:10px;color:#adb5bd">08/21起</span></div>
+    <div class="wl-row"><span class="wl-w">W2</span><span class="c-mini-tag" style="background:#1a5c3a;color:#fff">W2: 软编×2</span><span style="font-size:10px;color:#adb5bd">08/28起</span></div>
+    <div class="wl-row"><span class="wl-w">W3</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W3: AI科普×1</span><span style="font-size:10px;color:#adb5bd">09/04起</span></div>
+    <div class="wl-row"><span class="wl-w">W4</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W4: AI科普×1</span><span style="font-size:10px;color:#adb5bd">09/11起</span></div>
+    <div class="wl-row"><span class="wl-w">W5</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W5: AI科普×1</span><span style="font-size:10px;color:#adb5bd">09/18起</span></div>
+    <div class="wl-row"><span class="wl-w">W6</span><span class="c-mini-tag" style="background:#1a4a7a;color:#fff">W6: AI科普×1</span><span style="font-size:10px;color:#adb5bd">09/25起</span></div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="footer">
+  仅展示主讲老师需要出镜的课型（软编 + AI科普）。硬件搭建课为纯录播，不计入主讲排期。<br>
+  C3已完全移除。分时方案：奇数班 Fri18+Sat18，偶数班 Fri19+Sat19。
+</div>
+
+</div>
+</body>
+</html>
