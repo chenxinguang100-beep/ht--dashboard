@@ -243,4 +243,33 @@
             </div>
           </div></div></div>
 <div class="footer">硬编/搭建不计入主讲排期。本页按飞书表格「运营排期-中价课」更新。</div>
-</div></body></html>
+</div><script>
+// AI 科普排期整体被多加了一周；统一回拨 7 天，保证网格和卡片一致。
+(() => {
+  const SHIFT_DAYS = -7;
+  const shiftDate = (month, day) => {
+    const date = new Date(2026, month - 1, day + SHIFT_DAYS);
+    return { month: date.getMonth() + 1, day: date.getDate() };
+  };
+
+  document.querySelectorAll('.course-group').forEach((group) => {
+    if (!group.querySelector('.ai-title')) return;
+    group.querySelectorAll('.course-time').forEach((time) => {
+      time.textContent = time.textContent.replace(/^(\d{1,2})\.(\d{1,2})(?=\s)/, (_, month, day) => {
+        const shifted = shiftDate(Number(month), Number(day));
+        return `${shifted.month}.${shifted.day}`;
+      });
+    });
+  });
+
+  document.querySelectorAll('table tbody tr').forEach((row) => {
+    const cells = Array.from(row.children);
+    const aiCells = cells.filter((cell) => cell.querySelector('.class-block.ai'));
+    aiCells.forEach((cell) => {
+      const target = cells[cells.indexOf(cell) - 7];
+      if (!target || target.querySelector('.class-block')) return;
+      Array.from(cell.querySelectorAll('.class-block.ai')).forEach((block) => target.appendChild(block));
+    });
+  });
+})();
+</script></body></html>

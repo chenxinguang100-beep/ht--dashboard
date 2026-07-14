@@ -436,4 +436,40 @@
               <div class="course-group"><div class="group-title ai-title">AI科普</div><div class="course-line course-ai"><span class="course-name">AI-1</span><span class="course-time">9.12 周六 15:00</span></div><div class="course-line course-ai"><span class="course-name">AI-2</span><span class="course-time">9.19 周六 15:00</span></div><div class="course-line course-ai"><span class="course-name">AI-3</span><span class="course-time">9.26 周六 15:00</span></div><div class="course-line course-ai"><span class="course-name">AI-4</span><span class="course-time">10.3 周六 15:00</span></div></div>
               <div class="course-group hw-group"><div class="group-title hw-title">硬件录播</div><div class="course-line course-hw"><span class="course-name">搭建1</span><span class="course-time">8.29 周六 19:00</span></div><div class="course-line course-hw"><span class="course-name">硬编1</span><span class="course-time">9.4 周五 19:00</span></div><div class="course-line course-hw"><span class="course-name">搭建2</span><span class="course-time">9.5 周六 19:00</span></div><div class="course-line course-hw"><span class="course-name">硬编2</span><span class="course-time">9.11 周五 19:00</span></div><div class="course-line course-hw"><span class="course-name">搭建3</span><span class="course-time">9.12 周六 19:00</span></div><div class="course-line course-hw"><span class="course-name">硬编3</span><span class="course-time">9.18 周五 19:00</span></div><div class="course-line course-hw"><span class="course-name">搭建4</span><span class="course-time">9.19 周六 19:00</span></div><div class="course-line course-hw"><span class="course-name">硬编4</span><span class="course-time">9.25 周五 19:00</span></div></div>
             </div>
-          </div></div><div class="footer">按飞书最新表重建：每节课列出具体日期和时间；AI 已更新为周六 14:00/15:00/16:00/17:00 分时段。</div></div></body></html>
+          </div></div><div class="footer">按飞书最新表重建：每节课列出具体日期和时间；AI 已更新为周六 14:00/15:00/16:00/17:00 分时段。</div></div><script>
+// AI 科普排期整体被多加了一周；统一回拨 7 天，保证网格、卡片和对照表一致。
+(() => {
+  const SHIFT_DAYS = -7;
+  const shiftDate = (month, day) => {
+    const date = new Date(2026, month - 1, day + SHIFT_DAYS);
+    return { month: date.getMonth() + 1, day: date.getDate() };
+  };
+
+  document.querySelectorAll('.course-group').forEach((group) => {
+    if (!group.querySelector('.ai-title')) return;
+    group.querySelectorAll('.course-time').forEach((time) => {
+      time.textContent = time.textContent.replace(/^(\d{1,2})\.(\d{1,2})(?=\s)/, (_, month, day) => {
+        const shifted = shiftDate(Number(month), Number(day));
+        return `${shifted.month}.${shifted.day}`;
+      });
+    });
+  });
+
+  document.querySelectorAll('.compare-table tbody td:nth-child(5)').forEach((cell) => {
+    cell.textContent = cell.textContent.replace(/(\d{2})\/(\d{2})/, (_, month, day) => {
+      const shifted = shiftDate(Number(month), Number(day));
+      return `${String(shifted.month).padStart(2, '0')}/${String(shifted.day).padStart(2, '0')}`;
+    });
+  });
+
+  document.querySelectorAll('table tbody tr').forEach((row) => {
+    const cells = Array.from(row.children);
+    const aiCells = cells.filter((cell) => cell.querySelector('.class-block.ai'));
+    aiCells.forEach((cell) => {
+      const target = cells[cells.indexOf(cell) - 7];
+      if (!target || target.querySelector('.class-block')) return;
+      Array.from(cell.querySelectorAll('.class-block.ai')).forEach((block) => target.appendChild(block));
+    });
+  });
+})();
+</script></body></html>
